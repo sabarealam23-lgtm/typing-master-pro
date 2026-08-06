@@ -1,0 +1,6 @@
+{
+  "name": "Typing Master Pro",
+  "description": "A modern, professional typing practice and speed test platform built with React, Tailwind CSS, and Lucide Icons.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
