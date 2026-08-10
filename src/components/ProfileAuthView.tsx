@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, LogIn, UserPlus, LogOut, CheckCircle, Trophy, Zap, Clock, ArrowRight, Key, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, LogIn, UserPlus, LogOut, CheckCircle, Trophy, Zap, Clock, ArrowRight, Key, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -27,6 +27,8 @@ export const ProfileAuthView: React.FC<ProfileAuthViewProps> = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,22 +135,47 @@ export const ProfileAuthView: React.FC<ProfileAuthViewProps> = () => {
     }
   };
 
+  const maskEmail = (str: string) => {
+    const parts = str.split('@');
+    if (parts.length < 2) return '***';
+    const user = parts[0];
+    const maskedUser = user.length > 2 ? `${user.substring(0, 2)}***` : '***';
+    return `${maskedUser}@${parts[1]}`;
+  };
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
+    console.log('[Firebase Auth Diagnostic] Step 1: handleResetPassword invoked.');
+
     const targetEmail = email.trim();
     if (!targetEmail) {
+      console.warn('[Firebase Auth Diagnostic] Step 2: Empty email input provided.');
       setErrorMsg('Please enter your registered email address to reset your password.');
       return;
     }
 
+    console.log('[Firebase Auth Diagnostic] Step 2: Target Email provided (Masked):', maskEmail(targetEmail));
+    console.log('[Firebase Auth Diagnostic] Step 3: Auth Instance check:', {
+      isAuthInstanceValid: !!auth,
+      appName: auth?.app?.name || 'unknown',
+      projectId: auth?.app?.options?.projectId || 'unknown',
+      authDomain: auth?.app?.options?.authDomain || 'unknown'
+    });
+
     setIsSubmitting(true);
     try {
+      console.log('[Firebase Auth Diagnostic] Step 4: Executing sendPasswordResetEmail(auth, targetEmail)...');
       await sendPasswordResetEmail(auth, targetEmail);
+      console.log('[Firebase Auth Diagnostic] Step 5: sendPasswordResetEmail resolved successfully from Firebase backend.');
       setSuccessMsg(`Password reset email sent to ${targetEmail}. Please check your inbox for instructions.`);
     } catch (err: any) {
+      console.error('[Firebase Auth Diagnostic] Step 6: sendPasswordResetEmail rejected!', {
+        code: err?.code,
+        message: err?.message
+      });
       setErrorMsg(formatFirebaseError(err));
     } finally {
       setIsSubmitting(false);
@@ -341,13 +368,22 @@ export const ProfileAuthView: React.FC<ProfileAuthViewProps> = () => {
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-400 disabled:opacity-50"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-400 disabled:opacity-50"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -405,13 +441,22 @@ export const ProfileAuthView: React.FC<ProfileAuthViewProps> = () => {
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-400 disabled:opacity-50"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-400 disabled:opacity-50"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -420,13 +465,22 @@ export const ProfileAuthView: React.FC<ProfileAuthViewProps> = () => {
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-400 disabled:opacity-50"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-400 disabled:opacity-50"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
+                  tabIndex={-1}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
