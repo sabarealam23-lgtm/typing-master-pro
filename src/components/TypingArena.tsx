@@ -77,6 +77,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
   const [text, setText] = useState<string>(() => getRandomText(initialMode));
   const [userInput, setUserInput] = useState<string>('');
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(() => {
     if (initialMode === '30s') return 30;
     if (initialMode === '60s') return 60;
@@ -117,6 +118,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     setUserInput('');
     setIsActive(false);
     setIsFinished(false);
+    setStartTime(null);
     setSaveStatus('idle');
     hasSavedRef.current = false;
     setTimeLeft(getModeDuration(activeM));
@@ -134,18 +136,47 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     }
 
     const duration = getModeDuration(mode);
-    const timeSpent = duration - timeLeft > 0 ? duration - timeLeft : 1;
-    const minutes = Math.max(timeSpent, 1) / 60;
-    
+
+    // Calculate elapsed time in seconds accurately
+    let timeSpentSeconds = 0;
+    if (isFinished) {
+      if (startTime) {
+        timeSpentSeconds = Math.min((Date.now() - startTime) / 1000, duration);
+      } else {
+        timeSpentSeconds = duration - timeLeft;
+      }
+    } else if (isActive && startTime) {
+      timeSpentSeconds = (Date.now() - startTime) / 1000;
+    } else {
+      timeSpentSeconds = 0;
+    }
+
+    timeSpentSeconds = Math.max(timeSpentSeconds, 0);
+
+    // Guard Clause: Prevent WPM spike if elapsed time is less than 3 seconds
+    if (timeSpentSeconds < 3) {
+      const accuracy = input.length > 0 ? Math.round((correct / input.length) * 100) : 100;
+      return {
+        wpm: 0,
+        rawWpm: 0,
+        accuracy: isNaN(accuracy) ? 100 : accuracy,
+        timeSpentSeconds: Math.round(timeSpentSeconds),
+        correctChars: correct,
+        incorrectChars: incorrect,
+        totalChars: input.length
+      };
+    }
+
+    const minutes = timeSpentSeconds / 60;
     const wpm = Math.round((correct / 5) / minutes);
     const rawWpm = Math.round((input.length / 5) / minutes);
     const accuracy = input.length > 0 ? Math.round((correct / input.length) * 100) : 100;
 
     return {
-      wpm: isNaN(wpm) ? 0 : wpm,
-      rawWpm: isNaN(rawWpm) ? 0 : rawWpm,
+      wpm: isNaN(wpm) || !isFinite(wpm) ? 0 : wpm,
+      rawWpm: isNaN(rawWpm) || !isFinite(rawWpm) ? 0 : rawWpm,
       accuracy: isNaN(accuracy) ? 100 : accuracy,
-      timeSpentSeconds: timeSpent,
+      timeSpentSeconds: Math.round(timeSpentSeconds),
       correctChars: correct,
       incorrectChars: incorrect,
       totalChars: input.length
@@ -227,15 +258,19 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     const val = e.target.value;
     if (isFinished) return;
 
-    if (!isActive && val.length > 0) {
+    // Clamp input to passage length to prevent character alignment offset bugs
+    const slicedVal = val.slice(0, text.length);
+
+    if (!isActive && slicedVal.length > 0) {
       setIsActive(true);
+      setStartTime(Date.now());
     }
 
-    setUserInput(val);
+    setUserInput(slicedVal);
 
     // Auto finish if full text typed
-    if (val.length >= text.length) {
-      finishTest(val);
+    if (slicedVal.length >= text.length) {
+      finishTest(slicedVal);
     }
   };
 
