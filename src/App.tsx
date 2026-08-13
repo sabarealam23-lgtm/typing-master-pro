@@ -30,7 +30,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+  <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center p-4 sm:p-6 font-sans transition-colors duration-200">
+    
+    {/* Landscape Container (88% Width & Max 1100px) */}
+    <div className="w-[88%] max-w-[1100px] w-full mx-auto flex flex-col gap-6">
+      
       {/* Navigation Header */}
       <Header 
         activeTab={activeTab} 
@@ -38,6 +42,15 @@ export default function App() {
         theme={theme} 
         toggleTheme={toggleTheme} 
       />
+
+      {/* Main Content / Active Tabs Area */}
+      <main className="flex-1 w-full flex flex-col gap-6">
+        {/* Aapka activeTab condition (jaise TypingArena, Stats, etc.) yahan rahega */}
+      </main>
+
+    </div>
+  </div>
+);
 
       {/* Main Content Dashboard Layout */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">

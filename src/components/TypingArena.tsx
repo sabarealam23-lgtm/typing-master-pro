@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RotateCcw, Zap, Target, Clock, CheckCircle2, Award, Download, FileCheck, CloudCheck, AlertCircle, Shuffle } from 'lucide-react';
+import { RotateCcw, Zap, Target, Clock, CheckCircle2, Award, Download, CloudCheck, AlertCircle, Shuffle } from 'lucide-react';
 import { TypingStats } from '../types';
 import { generateCertificatePDF } from '../utils/certificate';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -362,10 +362,10 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
         </div>
       </div>
 
-      {/* Main Interactive Typing Arena */}
+      {/* Main Interactive Typing Arena (Landscape Layout) */}
       <div 
         onClick={() => inputRef.current?.focus()}
-        className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 min-h-[220px] flex flex-col justify-center cursor-text shadow-lg group transition-colors"
+        className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 cursor-text shadow-lg group transition-colors w-full"
       >
         <input
           ref={inputRef}
@@ -377,8 +377,8 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
           autoFocus
         />
 
-        {/* Character Display */}
-        <div className="font-mono text-xl sm:text-2xl leading-relaxed tracking-wide select-none p-4 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 shadow-inner">
+        {/* Character Display Container (Wide Landscape Settings: max-height 260px, comfortable reading font-size and line-height) */}
+        <div className="font-mono text-[1.25rem] sm:text-[1.35rem] leading-[1.8] tracking-wide select-none p-6 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 shadow-inner min-h-[160px] max-h-[260px] overflow-y-auto break-words">
           {text.split('').map((char, index) => {
             let color = 'text-slate-400 dark:text-slate-500';
             let bg = '';
