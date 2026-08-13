@@ -93,7 +93,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const hasSavedRef = useRef<boolean>(false);
 
-  // Auth State Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -101,7 +100,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     return () => unsubscribe();
   }, []);
 
-  // Initialize timer limit based on mode
   const getModeDuration = (m: PracticeMode): number => {
     if (m === '30s') return 30;
     if (m === '60s') return 60;
@@ -125,7 +123,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     setTimeout(() => inputRef.current?.focus(), 50);
   }, [mode]);
 
-  // Calculate Real-time Stats
   const calculateStats = (overrideInput?: string): TypingStats => {
     const input = overrideInput !== undefined ? overrideInput : userInput;
     let correct = 0;
@@ -183,7 +180,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
 
   const stats = calculateStats();
 
-  // Test Finish Action
   const finishTest = useCallback((overrideInput?: string) => {
     if (hasSavedRef.current) return;
     hasSavedRef.current = true;
@@ -214,7 +210,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     }
   }, [userInput, text, mode, timeLeft, onFinish]);
 
-  // Timer Countdown Effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isActive && timeLeft > 0 && !isFinished) {
@@ -227,7 +222,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     return () => clearInterval(timer);
   }, [isActive, timeLeft, isFinished, finishTest]);
 
-  // Keyboard shortcut listener for Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -238,7 +232,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [resetTest]);
 
-  // Handle Input Changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (isFinished) return;
@@ -259,7 +252,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* Mode Controls Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-3 rounded-xl">
         <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
           <span className="text-slate-500 uppercase px-2">Timer:</span>
@@ -320,7 +312,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
         </div>
       </div>
 
-      {/* Real-time Stat Counter Bar */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-xs">
           <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -344,7 +335,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
         </div>
       </div>
 
-      {/* Main Interactive Typing Arena (Wide Landscape Text Area) */}
       <div 
         onClick={() => inputRef.current?.focus()}
         className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 cursor-text shadow-lg group transition-colors w-full"
@@ -359,7 +349,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
           autoFocus
         />
 
-        {/* Character Display Box (Wide Landscape Settings) */}
         <div className="font-mono text-[1.25rem] sm:text-[1.35rem] leading-[1.8] tracking-wide select-none p-6 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 shadow-inner min-h-[160px] max-h-[260px] overflow-y-auto break-words w-full">
           {text.split('').map((char, index) => {
             let color = 'text-slate-400 dark:text-slate-500';
@@ -391,7 +380,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
           </div>
         )}
 
-        {/* Interactive Virtual Keyboard */}
         <div className="mt-8 space-y-2 pt-6 border-t border-slate-200 dark:border-slate-800/80">
           <div className="flex justify-center gap-1.5">
             {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map(key => {
@@ -452,7 +440,6 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
         </div>
       </div>
 
-      {/* Finished Summary Modal */}
       {isFinished && (
         <div className="bg-white dark:bg-slate-900 border border-teal-400/40 rounded-2xl p-6 text-center space-y-4 shadow-xl">
           <div className="inline-flex p-3 rounded-full bg-teal-400/10 text-teal-500 dark:text-teal-400">

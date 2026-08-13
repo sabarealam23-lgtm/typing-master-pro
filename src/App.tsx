@@ -30,34 +30,34 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center p-4 sm:p-6 font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center p-4 sm:p-6 font-sans transition-colors duration-200 w-full">
       
-      {/* Full Landscape Container */}
-      <div className="w-[92%] max-w-[1200px] w-full mx-auto flex flex-col gap-6">
-        
-        {/* Navigation Header */}
+      {/* 1. TOP HEADER PATTI: Full-Width across entire screen */}
+      <header className="w-full pb-4">
         <Header 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
           theme={theme} 
           toggleTheme={toggleTheme} 
         />
+      </header>
 
-        {/* Main Content Area */}
+      {/* 2. MAIN CONTENT AREA: Centered Landscape Container */}
+      <div className="w-[88%] max-w-[1100px] w-full mx-auto flex flex-col gap-6">
         <main className="flex-1 w-full flex flex-col gap-6">
           
-          {/* Home / Practice / Speedtest Mode (Full-Width Stack Layout like Images 2 & 3) */}
+          {/* Home / Practice / Speedtest Mode */}
           {(activeTab === 'home' || activeTab === 'speedtest' || activeTab === 'practice') && (
             <div className="flex flex-col gap-6 w-full">
               
-              {/* 1. Full-Width Interactive Typing Arena (Landscape Text Area) */}
+              {/* Full-Width Interactive Typing Arena Box */}
               <div className="w-full">
                 <TypingArena 
                   initialMode={activeTab === 'speedtest' ? '60s' : '30s'} 
                 />
               </div>
 
-              {/* 2. Horizontal Stats Row (Below Typing Arena) */}
+              {/* Horizontal Stats Row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
                   <div>
@@ -92,10 +92,10 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 3. Horizontal Bottom Section: Leaderboard & Next Goal */}
+              {/* Bottom Section: Leaderboard & Goals */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                 
-                {/* Leaderboard Table (Spans 2 columns) */}
+                {/* Leaderboard Table */}
                 <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
                   <div className="bg-slate-100 dark:bg-slate-800 px-4 py-3 text-xs font-extrabold tracking-wider uppercase text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
                     <span>LEADERBOARD</span>
@@ -142,26 +142,19 @@ export default function App() {
             </div>
           )}
 
-          {/* Lessons View */}
           {activeTab === 'lessons' && <LessonsView />}
-
-          {/* Dashboard View */}
           {activeTab === 'dashboard' && <DashboardView />}
-
-          {/* Leaderboard View */}
           {activeTab === 'leaderboard' && <LeaderboardView />}
-
-          {/* Profile Auth View */}
           {activeTab === 'profile' && <ProfileAuthView />}
 
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto">
+        <footer className="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto w-full">
           Typing Master Pro &copy; {new Date().getFullYear()} &bull; Professional Polish Theme
         </footer>
-
       </div>
+
     </div>
   );
 }
