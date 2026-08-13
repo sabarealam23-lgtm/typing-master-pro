@@ -93,6 +93,13 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const hasSavedRef = useRef<boolean>(false);
 
+  // Refs to eliminate stale closure bugs during fast typing & state updates
+  const userInputRef = useRef<string>('');
+  userInputRef.current = userInput;
+
+  const textRef = useRef<string>('');
+  textRef.current = text;
+
   // Auth State Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -101,14 +108,13 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     return () => unsubscribe();
   }, []);
 
-  // Initialize timer limit based on mode
   const getModeDuration = (m: PracticeMode): number => {
     if (m === '30s') return 30;
     if (m === '60s') return 60;
     if (m === '120s') return 120;
     if (m === '300s') return 300;
     if (m === '600s') return 600;
-    return 60; // default for passage modes
+    return 60;
   };
 
   const resetTest = useCallback((newMode?: PracticeMode) => {
@@ -116,6 +122,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     setMode(activeM);
     setText(prevText => getRandomText(activeM, prevText));
     setUserInput('');
+    userInputRef.current = '';
     setIsActive(false);
     setIsFinished(false);
     setStartTime(null);
@@ -125,80 +132,86 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     setTimeout(() => inputRef.current?.focus(), 50);
   }, [mode]);
 
-  // Calculate Real-time Stats
-  const calculateStats = (overrideInput?: string): TypingStats => {
-    const input = overrideInput !== undefined ? overrideInput : userInput;
+  // Accurate & Bug-free Real-time Calculation
+  const calculateStats = useCallback((inputVal?: string, isFinishedOverride?: boolean): TypingStats => {
+    const currentInput = inputVal !== undefined ? inputVal : userInputRef.current;
+    const currentText = textRef.current;
+
     let correct = 0;
     let incorrect = 0;
-    for (let i = 0; i < input.length; i++) {
-      if (input[i] === text[i]) correct++;
-      else incorrect++;
+
+    // Bounds checking to strictly prevent off-by-one errors
+    const minLen = Math.min(currentInput.length, currentText.length);
+    for (let i = 0; i < minLen; i++) {
+      if (currentInput[i] === currentText[i]) {
+        correct++;
+      } else {
+        incorrect++;
+      }
     }
 
     const duration = getModeDuration(mode);
-
-    // Calculate elapsed time in seconds accurately
     let timeSpentSeconds = 0;
-    if (isFinished) {
+    const testDone = isFinishedOverride !== undefined ? isFinishedOverride : isFinished;
+
+    if (testDone) {
       if (startTime) {
         timeSpentSeconds = Math.min((Date.now() - startTime) / 1000, duration);
       } else {
-        timeSpentSeconds = duration - timeLeft;
+        timeSpentSeconds = duration;
       }
     } else if (isActive && startTime) {
       timeSpentSeconds = (Date.now() - startTime) / 1000;
-    } else {
-      timeSpentSeconds = 0;
     }
 
     timeSpentSeconds = Math.max(timeSpentSeconds, 0);
 
-    // Guard Clause: Prevent WPM spike if elapsed time is less than 3 seconds
-    if (timeSpentSeconds < 3) {
-      const accuracy = input.length > 0 ? Math.round((correct / input.length) * 100) : 100;
+    if (timeSpentSeconds < 1) {
+      const accuracy = currentInput.length > 0 ? Math.round((correct / currentInput.length) * 100) : 100;
       return {
         wpm: 0,
         rawWpm: 0,
         accuracy: isNaN(accuracy) ? 100 : accuracy,
-        timeSpentSeconds: Math.round(timeSpentSeconds),
+        timeSpentSeconds: 0,
         correctChars: correct,
         incorrectChars: incorrect,
-        totalChars: input.length
+        totalChars: currentInput.length
       };
     }
 
     const minutes = timeSpentSeconds / 60;
+    // Standard WPM: 1 word = 5 characters
     const wpm = Math.round((correct / 5) / minutes);
-    const rawWpm = Math.round((input.length / 5) / minutes);
-    const accuracy = input.length > 0 ? Math.round((correct / input.length) * 100) : 100;
+    const rawWpm = Math.round((currentInput.length / 5) / minutes);
+    const accuracy = currentInput.length > 0 ? Math.round((correct / currentInput.length) * 100) : 100;
 
     return {
       wpm: isNaN(wpm) || !isFinite(wpm) ? 0 : wpm,
       rawWpm: isNaN(rawWpm) || !isFinite(rawWpm) ? 0 : rawWpm,
-      accuracy: isNaN(accuracy) ? 100 : accuracy,
+      accuracy: isNaN(accuracy) || !isFinite(accuracy) ? 100 : accuracy,
       timeSpentSeconds: Math.round(timeSpentSeconds),
       correctChars: correct,
       incorrectChars: incorrect,
-      totalChars: input.length
+      totalChars: currentInput.length
     };
-  };
+  }, [mode, isFinished, isActive, startTime]);
 
   const stats = calculateStats();
 
-  // Test Finish Action: directly triggers score save
   const finishTest = useCallback((overrideInput?: string) => {
     if (hasSavedRef.current) return;
     hasSavedRef.current = true;
     setIsFinished(true);
     setIsActive(false);
 
-    const finalStats = calculateStats(overrideInput);
+    const finalInput = overrideInput !== undefined ? overrideInput : userInputRef.current;
+    const finalStats = calculateStats(finalInput, true);
+
     if (onFinish) {
       onFinish(finalStats);
     }
 
     if (auth.currentUser) {
-      console.log("Triggering save for UID:", auth.currentUser.uid);
       setSaveStatus('saving');
       addDoc(collection(db, "users", auth.currentUser.uid, "history"), {
         wpm: Number(finalStats.wpm) || 0,
@@ -209,20 +222,15 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
       })
       .then(() => {
         setSaveStatus('saved');
-        alert("Score Saved Successfully!");
-        console.log("Score written to Firestore successfully!");
       })
       .catch((err) => {
         setSaveStatus('error');
-        alert("Firestore Save Error: " + err.message);
         console.error("Firestore Save Error:", err);
       });
-    } else {
-      console.log("No auth.currentUser present when finishing test.");
     }
-  }, [userInput, text, mode, timeLeft, onFinish]);
+  }, [mode, calculateStats, onFinish]);
 
-  // Timer Countdown Effect
+  // Countdown timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isActive && timeLeft > 0 && !isFinished) {
@@ -235,14 +243,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     return () => clearInterval(timer);
   }, [isActive, timeLeft, isFinished, finishTest]);
 
-  // Handle Firestore history saving on finish if triggered externally
-  useEffect(() => {
-    if (isFinished && !hasSavedRef.current) {
-      finishTest();
-    }
-  }, [isFinished, finishTest]);
-
-  // Keyboard shortcut listener for Escape
+  // Escape key shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -253,12 +254,12 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [resetTest]);
 
-  // Handle Input Changes
+  // Precise Input Handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (isFinished) return;
 
-    // Clamp input to passage length to prevent character alignment offset bugs
+    // Clamp input to paragraph length to strictly prevent offset bugs
     const slicedVal = val.slice(0, text.length);
 
     if (!isActive && slicedVal.length > 0) {
@@ -267,8 +268,9 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
     }
 
     setUserInput(slicedVal);
+    userInputRef.current = slicedVal;
 
-    // Auto finish if full text typed
+    // Auto finish test when passage completion is reached
     if (slicedVal.length >= text.length) {
       finishTest(slicedVal);
     }
@@ -284,7 +286,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
             <button
               key={m}
               onClick={() => resetTest(m)}
-              className={`px-3 py-1.5 rounded-lg border transition-all ${
+              className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                 mode === m 
                   ? 'bg-teal-400 text-slate-950 font-bold border-teal-300 shadow-xs' 
                   : 'bg-slate-800 text-slate-400 border-slate-700/60 hover:text-slate-200'
@@ -299,7 +301,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
             <button
               key={m}
               onClick={() => resetTest(m)}
-              className={`px-3 py-1.5 rounded-lg border capitalize transition-all ${
+              className={`px-3 py-1.5 rounded-lg border capitalize transition-all cursor-pointer ${
                 mode === m 
                   ? 'bg-teal-400 text-slate-950 font-bold border-teal-300 shadow-xs' 
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700/60 hover:text-slate-900 dark:hover:text-slate-200'
@@ -362,7 +364,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
         </div>
       </div>
 
-      {/* Main Interactive Typing Arena (Landscape Layout) */}
+      {/* Main Interactive Typing Arena (Landscape View) */}
       <div 
         onClick={() => inputRef.current?.focus()}
         className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 cursor-text shadow-lg group transition-colors w-full"
@@ -377,7 +379,7 @@ export const TypingArena: React.FC<TypingArenaProps> = ({
           autoFocus
         />
 
-        {/* Character Display Container (Wide Landscape Settings: max-height 260px, comfortable reading font-size and line-height) */}
+        {/* Character Display Container */}
         <div className="font-mono text-[1.25rem] sm:text-[1.35rem] leading-[1.8] tracking-wide select-none p-6 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 shadow-inner min-h-[160px] max-h-[260px] overflow-y-auto break-words">
           {text.split('').map((char, index) => {
             let color = 'text-slate-400 dark:text-slate-500';
