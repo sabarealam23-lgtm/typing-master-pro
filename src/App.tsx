@@ -32,8 +32,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center p-4 sm:p-6 font-sans transition-colors duration-200">
       
-      {/* Landscape Container (88% Width & Max 1100px) */}
-      <div className="w-[88%] max-w-[1100px] w-full mx-auto flex flex-col gap-6">
+      {/* Full Landscape Container */}
+      <div className="w-[92%] max-w-[1200px] w-full mx-auto flex flex-col gap-6">
         
         {/* Navigation Header */}
         <Header 
@@ -46,58 +46,60 @@ export default function App() {
         {/* Main Content Area */}
         <main className="flex-1 w-full flex flex-col gap-6">
           
-          {/* Home / Speedtest / Practice Layout */}
+          {/* Home / Practice / Speedtest Mode (Full-Width Stack Layout like Images 2 & 3) */}
           {(activeTab === 'home' || activeTab === 'speedtest' || activeTab === 'practice') && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="flex flex-col gap-6 w-full">
               
-              {/* Left Column: Real-time Player Stats Panel */}
-              <div className="lg:col-span-3 space-y-4">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                  <div className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                    <span>WPM AVG</span>
-                    <Zap className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400" />
-                  </div>
-                  <div className="text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-1">78</div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                  <div className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                    <span>ACCURACY</span>
-                    <Target className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400" />
-                  </div>
-                  <div className="text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-1">98.4%</div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                  <div className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                    <span>DAILY STREAK</span>
-                    <Clock className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                  </div>
-                  <div className="text-3xl font-extrabold text-amber-500 dark:text-amber-400 mt-1">12 Days</div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                  <div className="text-[11px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                    <span>TOP RECORD</span>
-                    <Trophy className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
-                  </div>
-                  <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">102 WPM</div>
-                </div>
-              </div>
-
-              {/* Center Column: Interactive Typing Practice Engine */}
-              <div className="lg:col-span-6">
+              {/* 1. Full-Width Interactive Typing Arena (Landscape Text Area) */}
+              <div className="w-full">
                 <TypingArena 
                   initialMode={activeTab === 'speedtest' ? '60s' : '30s'} 
                 />
               </div>
 
-              {/* Right Column: Leaderboard & Next Goal */}
-              <div className="lg:col-span-3 space-y-4">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
+              {/* 2. Horizontal Stats Row (Below Typing Arena) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">WPM AVG</div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-1">78</div>
+                  </div>
+                  <Zap className="w-5 h-5 text-teal-500 dark:text-teal-400" />
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">ACCURACY</div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-1">98.4%</div>
+                  </div>
+                  <Target className="w-5 h-5 text-teal-500 dark:text-teal-400" />
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">DAILY STREAK</div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-amber-500 dark:text-amber-400 mt-1">12 Days</div>
+                  </div>
+                  <Clock className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">TOP RECORD</div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">102 WPM</div>
+                  </div>
+                  <Trophy className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+                </div>
+              </div>
+
+              {/* 3. Horizontal Bottom Section: Leaderboard & Next Goal */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                
+                {/* Leaderboard Table (Spans 2 columns) */}
+                <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
                   <div className="bg-slate-100 dark:bg-slate-800 px-4 py-3 text-xs font-extrabold tracking-wider uppercase text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
                     <span>LEADERBOARD</span>
-                    <Trophy className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                    <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                   </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
                     {[
@@ -118,11 +120,14 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-teal-400/10 dark:bg-teal-400/5 border border-teal-400/30 dark:border-teal-400/20 rounded-xl p-5">
-                  <div className="text-[11px] font-bold tracking-wider uppercase text-teal-600 dark:text-teal-400">NEXT GOAL</div>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">
-                    Complete 3 Paragraph Lessons to unlock the <strong className="text-teal-600 dark:text-teal-300 font-semibold">'Consistency'</strong> badge.
-                  </p>
+                {/* Next Goal Card */}
+                <div className="bg-teal-400/10 dark:bg-teal-400/5 border border-teal-400/30 dark:border-teal-400/20 rounded-xl p-5 flex flex-col justify-between">
+                  <div>
+                    <div className="text-[11px] font-bold tracking-wider uppercase text-teal-600 dark:text-teal-400">NEXT GOAL</div>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">
+                      Complete 3 Paragraph Lessons to unlock the <strong className="text-teal-600 dark:text-teal-300 font-semibold">'Consistency'</strong> badge.
+                    </p>
+                  </div>
                   <button 
                     onClick={() => setActiveTab('lessons')}
                     className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-3 bg-teal-400 text-slate-950 font-bold rounded-lg text-xs hover:bg-teal-300 transition-colors shadow-xs cursor-pointer"
@@ -131,6 +136,7 @@ export default function App() {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
+
               </div>
 
             </div>
@@ -147,17 +153,6 @@ export default function App() {
 
           {/* Profile Auth View */}
           {activeTab === 'profile' && <ProfileAuthView />}
-
-          {/* Fallback View */}
-          {activeTab !== 'home' && activeTab !== 'speedtest' && activeTab !== 'practice' && activeTab !== 'lessons' && activeTab !== 'dashboard' && activeTab !== 'leaderboard' && activeTab !== 'profile' && (
-            <div className="p-12 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <Keyboard className="w-12 h-12 text-teal-400 mx-auto mb-4 animate-bounce" />
-              <h2 className="text-2xl font-bold capitalize text-slate-900 dark:text-white">{activeTab} Section</h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-2">
-                Module ready! Select "Practice" or "Lessons" to start typing right now.
-              </p>
-            </div>
-          )}
 
         </main>
 
